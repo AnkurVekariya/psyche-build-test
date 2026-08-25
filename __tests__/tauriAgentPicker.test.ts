@@ -15,7 +15,8 @@ const stylesCss = readFileSync(
   join(repoRoot, 'native/desktop/psyche-build-tauri/web/styles.css'),
   'utf8',
 );
-void indexHtml;
+
+
 void stylesCss;
 
 function functionSource(name: string) {

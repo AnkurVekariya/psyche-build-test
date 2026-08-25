@@ -18,8 +18,8 @@ export function useDialogState() {
    */
   const isAnyDialogOpen = () => {
     return !!(
-      showCommandPrompt ||
-      showFileCopyPrompt ||
+      showCommandPrompt1 ||
+      showFileCopyPrompt1 ||
       runningCommand ||
       quitConfirmMode
     )

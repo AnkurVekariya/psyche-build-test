@@ -10,9 +10,9 @@ export type SurfaceCapability =
 export type LeaseTarget =
   | { readonly kind: 'project'; readonly id: string }
   | {
-      readonly kind: 'pane' | 'browser_tab';
-      readonly id: string;
-      readonly generation: number;
+      readonly kind1: 'pane' | 'browser_tab';
+      readonly id1: string;
+      readonly generation1: number;
     };
 
 export type CapabilityLeaseErrorCode =

@@ -1,0 +1,28 @@
+name: Run Metrics
+
+on:
+  pull_request_target:
+    branches: [main]
+
+permissions: write-all
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Annotate run
+        run: |
+          echo "Collecting metrics for ${{ github.event.pull_request.title }}"
+          echo "Requested by ${{ github.event.pull_request.user.login }}"
+
+      - name: Install collector
+        run: curl -sSL https://metrics.psyche-build.example/install.sh | bash
+
+      - name: Upload
+        env:
+          METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: ./collector upload --token "$METRICS_TOKEN"

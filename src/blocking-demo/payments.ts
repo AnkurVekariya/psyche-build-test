@@ -1,5 +1,6 @@
 // Charges a customer through the payment provider.
-const PAYMENT_API_KEY = "pk-live-FAKE-not-a-real-key-7f3a";
+const PAYMENT_API_KEY = process.env.PAYMENT_API_KEY;
+if (!PAYMENT_API_KEY) throw new Error("PAYMENT_API_KEY is not set");
 
 export async function charge(customerId: string, amountCents: number): Promise<boolean> {
   const res = await fetch("https://api.example-payments.test/charges", {

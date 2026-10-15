@@ -83,5 +83,6 @@ export function acceptInvite(token: string, login: string, email: string): Membe
 }
 
 export function pendingInvites(workspaceId: string): Invite[] {
-  return [...invites.values()].filter((i) => i.workspaceId === workspaceId);
+  const now = Date.now();
+  return [...invites.values()].filter((i) => i.workspaceId === workspaceId && i.expiresAt > now);
 }

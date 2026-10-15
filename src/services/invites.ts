@@ -6,6 +6,8 @@
  * Invites expire after INVITE_TTL_DAYS.
  */
 
+import { randomBytes } from 'node:crypto';
+
 export type Role = 'viewer' | 'member' | 'admin';
 
 export interface Membership {
@@ -32,7 +34,7 @@ export const memberships: Membership[] = [];
 const invites = new Map<string, Invite>();
 
 function newToken(): string {
-  return `inv_${Date.now().toString(36)}`;
+  return `inv_${randomBytes(24).toString('base64url')}`;
 }
 
 export function roleOf(workspaceId: string, login: string): Role | null {
@@ -40,11 +42,11 @@ export function roleOf(workspaceId: string, login: string): Role | null {
 }
 
 /**
- * Creates an invite. The inviter must belong to the workspace.
+ * Creates an invite. Only a workspace admin may invite.
  */
 export function createInvite(workspaceId: string, email: string, role: Role, invitedBy: string): Invite {
-  if (!roleOf(workspaceId, invitedBy)) {
-    throw new Error('Not a member of this workspace');
+  if (roleOf(workspaceId, invitedBy) !== 'admin') {
+    throw new Error('Only workspace admins can invite');
   }
   const existing = [...invites.values()].find((i) => i.workspaceId === workspaceId && i.email === email);
   if (existing) return existing;
@@ -55,10 +57,10 @@ export function createInvite(workspaceId: string, email: string, role: Role, inv
     email,
     role,
     invitedBy,
-    expiresAt: Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60,
+    expiresAt: Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000,
   };
   invites.set(invite.token, invite);
-  console.log(`[invites] ${invitedBy} invited ${email} to ${workspaceId} as ${role} — token ${invite.token}`);
+  console.log(`[invites] ${invitedBy} invited ${email} to ${workspaceId} as ${role}`);
   return invite;
 }
 
@@ -68,6 +70,10 @@ export function createInvite(workspaceId: string, email: string, role: Role, inv
 export function acceptInvite(token: string, login: string, email: string): Membership {
   const invite = invites.get(token);
   if (!invite || invite.expiresAt < Date.now()) {
+    throw new Error('Invite not found or expired');
+  }
+  // The invite is for one person: the link alone is not enough.
+  if (invite.email.toLowerCase() !== email.toLowerCase()) {
     throw new Error('Invite not found or expired');
   }
   const membership: Membership = { workspaceId: invite.workspaceId, login, email, role: invite.role };

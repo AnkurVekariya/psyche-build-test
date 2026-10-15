@@ -17,12 +17,7 @@ describe('share links', () => {
 
   it('rejects an expired link', () => {
     const link = createShareLink('s1', 'alice', -1);
-    try {
-      resolveShareLink(link.token);
-      expect.fail('should have thrown');
-    } catch {
-      // expired, as expected
-    }
+    expect(() => resolveShareLink(link.token)).toThrow('Share link has expired');
   });
 
   it('lists only the caller\'s links', () => {

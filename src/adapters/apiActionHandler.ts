@@ -12,6 +12,8 @@ import type { ActionResult, ActionOption } from '../actions/types.js';
  */
 export interface APIActionResponse {
   success: boolean;
+  /** Echoed from the x-request-id header, so a UI can match a response to its request. */
+  requestId?: string;
   type: ActionResult['type'];
   message: string;
   title?: string;
@@ -92,9 +94,10 @@ setInterval(cleanupOldCallbacks, 60 * 1000);
 /**
  * Convert ActionResult to API response
  */
-export function actionResultToAPIResponse(result: ActionResult): APIActionResponse {
+export function actionResultToAPIResponse(result: ActionResult, requestId?: string): APIActionResponse {
   const baseResponse: APIActionResponse = {
-    success: result.type !== 'error',
+    success: result.type === 'success',
+    requestId,
     type: result.type,
     message: result.message,
     title: result.title,

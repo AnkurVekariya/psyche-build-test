@@ -1,0 +1,28 @@
+name: Quota coverage
+
+on:
+  pull_request:
+    paths:
+      - "packages/quota/**"
+      - ".github/workflows/quota-coverage.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/quota
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: packages/quota/coverage/lcov.info

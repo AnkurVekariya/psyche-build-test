@@ -78,7 +78,8 @@ export function viewShare(req: ShareRequest, res: ServerResponse): void {
   try {
     const link = resolveShareLink(req.params.token);
     send(res, 200, { sessionId: link.sessionId, log: sessionLogTail(link.sessionId, Number(req.query.lines ?? 200)) });
-  } catch (err) {
-    send(res, 404, { error: err instanceof Error ? err.message : 'Not found' });
+  } catch {
+    // One answer for unknown and expired links, so a token's history can't be probed.
+    send(res, 404, { error: 'Share link not found' });
   }
 }

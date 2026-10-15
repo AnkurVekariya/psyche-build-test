@@ -1,0 +1,13 @@
+{
+  "name": "@psyche/quota",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "coverage": "vitest run --coverage --coverage.reporter=lcov --coverage.include=src"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "2.1.9",
+    "vitest": "2.1.9"
+  }
+}

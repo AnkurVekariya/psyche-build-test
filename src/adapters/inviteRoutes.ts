@@ -25,7 +25,9 @@ function send(res: ServerResponse, status: number, body: unknown): void {
 export function inviteTeammate(req: InviteRequest, res: ServerResponse): void {
   if (!req.user) return send(res, 401, { error: 'Sign in first' });
   const { email, role = 'member' } = req.body ?? {};
-  if (!email || !ROLES.includes(role)) return send(res, 400, { error: 'email and a valid role are required' });
+  if (typeof email !== 'string' || !email.includes('@') || !ROLES.includes(role)) {
+    return send(res, 400, { error: 'email and a valid role are required' });
+  }
   try {
     const invite = createInvite(req.params.id, email, role, req.user.login);
     send(res, 201, { url: `/invites/${invite.token}`, expiresAt: invite.expiresAt });

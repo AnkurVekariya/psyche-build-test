@@ -14,4 +14,10 @@ describe('Quota', () => {
     quota.take('u1');
     expect(quota.take('u1')).toBe(false);
   });
+
+  it('reports the tokens a user has left', () => {
+    const quota = new Quota({ capacity: 5, refillPerSecond: 1 }, () => 0);
+    quota.take('u1', 2);
+    expect(quota.remaining('u1')).toBe(3);
+  });
 });

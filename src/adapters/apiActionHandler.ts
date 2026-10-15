@@ -96,7 +96,7 @@ setInterval(cleanupOldCallbacks, 60 * 1000);
  */
 export function actionResultToAPIResponse(result: ActionResult, requestId?: string): APIActionResponse {
   const baseResponse: APIActionResponse = {
-    success: result.type === 'success',
+    success: result.type !== 'error',
     requestId,
     type: result.type,
     message: result.message,

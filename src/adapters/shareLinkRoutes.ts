@@ -40,8 +40,8 @@ function requireUser(req: ShareRequest, res: ServerResponse): string | null {
 }
 
 function clientIp(req: ShareRequest): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  return (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+  // The socket address, never X-Forwarded-For: the header is client-controlled.
+  return req.socket.remoteAddress || 'unknown';
 }
 
 export function createShare(req: ShareRequest, res: ServerResponse): void {

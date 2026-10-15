@@ -60,7 +60,7 @@ export function createInvite(workspaceId: string, email: string, role: Role, inv
     expiresAt: Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000,
   };
   invites.set(invite.token, invite);
-  console.log(`[invites] ${invitedBy} invited ${email} to ${workspaceId} as ${role}`);
+  console.log(`[invites] ${invitedBy} invited a teammate to ${workspaceId} as ${role}`);
   return invite;
 }
 

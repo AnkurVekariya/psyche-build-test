@@ -40,9 +40,9 @@ export function createShareLink(sessionId: string, createdBy: string, ttlMs = DE
     token: newToken(),
     sessionId,
     createdBy,
-    // Short-lived by design: anything that isn't a positive finite number,
-    // or exceeds a day, gets the default.
-    expiresAt: Date.now() + (Number.isFinite(ttlMs) && ttlMs > 0 ? Math.min(ttlMs, DEFAULT_TTL_MS) : DEFAULT_TTL_MS),
+    // Short-lived by design: capped at a day; zero or negative means already
+    // expired; anything that isn't a finite number gets the default.
+    expiresAt: Date.now() + (Number.isFinite(ttlMs) ? Math.min(ttlMs, DEFAULT_TTL_MS) : DEFAULT_TTL_MS),
   };
   links.set(link.token, link);
   console.log(`[share] ${createdBy} created a link for session ${sessionId}`);

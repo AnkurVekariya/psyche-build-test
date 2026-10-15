@@ -59,7 +59,8 @@ export function createShare(req: ShareRequest, res: ServerResponse): void {
 export function listShares(req: ShareRequest, res: ServerResponse): void {
   const login = requireUser(req, res);
   if (!login) return;
-  const limit = Math.min(Number(req.query.limit ?? 20), MAX_PAGE);
+  const requested = Number(req.query.limit ?? 20);
+  const limit = Number.isInteger(requested) && requested > 0 ? Math.min(requested, MAX_PAGE) : 20;
   send(res, 200, { links: listShareLinks(login, limit) });
 }
 

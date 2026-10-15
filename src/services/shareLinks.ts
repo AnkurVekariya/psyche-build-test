@@ -5,6 +5,8 @@
  * through a short-lived token, without giving them access to the workspace.
  */
 
+import { randomBytes } from 'node:crypto';
+
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface SessionRecord {
@@ -26,12 +28,14 @@ export const sessions = new Map<string, SessionRecord>();
 const links = new Map<string, ShareLink>();
 
 function newToken(): string {
-  return `psy_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+  return `psy_${randomBytes(24).toString('base64url')}`;
 }
 
 export function createShareLink(sessionId: string, createdBy: string, ttlMs = DEFAULT_TTL_MS): ShareLink {
   const session = sessions.get(sessionId);
-  if (!session) throw new Error('Unknown session');
+  // Only the session's owner may share it; anyone else gets the same answer
+  // as for a session that does not exist.
+  if (!session || session.owner !== createdBy) throw new Error('Unknown session');
   const link: ShareLink = {
     token: newToken(),
     sessionId,
@@ -39,7 +43,7 @@ export function createShareLink(sessionId: string, createdBy: string, ttlMs = DE
     expiresAt: Date.now() + ttlMs,
   };
   links.set(link.token, link);
-  console.log(`[share] ${createdBy} created link ${link.token} for session ${sessionId}`);
+  console.log(`[share] ${createdBy} created a link for session ${sessionId}`);
   return link;
 }
 

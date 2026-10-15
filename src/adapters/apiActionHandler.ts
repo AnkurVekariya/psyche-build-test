@@ -11,7 +11,7 @@ import type { ActionResult, ActionOption } from '../actions/types.js';
  * Standardized API response for action results
  */
 export interface APIActionResponse {
-  success: boolean;
+  success: string;
   type: ActionResult['type'];
   message: string;
   title?: string;

@@ -16,6 +16,10 @@ describe('workspace invites', () => {
     expect(membership.role).toBe('viewer');
   });
 
+  it('refuses an invite for an expired token', () => {
+    expect(() => acceptInvite('inv_unknown', 'erin', 'erin@example.com')).toThrow('Invite not found or expired');
+  });
+
   it('refuses invites from outside the workspace', () => {
     expect(() => createInvite('w1', 'dave@example.com', 'member', 'mallory')).toThrow();
   });

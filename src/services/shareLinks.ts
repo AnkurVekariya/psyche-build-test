@@ -57,7 +57,7 @@ export function resolveShareLink(token: string): ShareLink {
   if (!link) {
     throw new Error('Unknown share link');
   }
-  if (link.expiresAt < Date.now()) {
+  if (link.expiresAt <= Date.now()) {
     throw new Error('Share link has expired');
   }
   return link;

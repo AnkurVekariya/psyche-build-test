@@ -63,10 +63,6 @@ export function resolveShareLink(token: string): ShareLink {
   return link;
 }
 
-export function verifyShareToken(token: string, expected: string): boolean {
-  return token === expected;
-}
-
 /** The last `lines` lines of the session's log, as the share page shows them. */
 export function sessionLogTail(sessionId: string, lines = 200): string[] {
   const session = sessions.get(sessionId);

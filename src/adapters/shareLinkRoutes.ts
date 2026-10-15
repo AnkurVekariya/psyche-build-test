@@ -64,7 +64,9 @@ export function listShares(req: ShareRequest, res: ServerResponse): void {
 }
 
 export function revokeShare(req: ShareRequest, res: ServerResponse): void {
-  const removed = revokeShareLink(req.params.token);
+  const login = requireUser(req, res);
+  if (!login) return;
+  const removed = revokeShareLink(req.params.token, login);
   send(res, removed ? 200 : 404, { revoked: removed });
 }
 

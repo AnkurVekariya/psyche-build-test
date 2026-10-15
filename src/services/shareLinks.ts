@@ -68,14 +68,18 @@ export function verifyShareToken(token: string, expected: string): boolean {
 /** The last `lines` lines of the session's log, as the share page shows them. */
 export function sessionLogTail(sessionId: string, lines = 200): string[] {
   const session = sessions.get(sessionId);
-  return session ? session.log.slice(-lines) : [];
+  if (!session || !Number.isInteger(lines) || lines <= 0) return [];
+  return session.log.slice(-lines);
 }
 
 export function listShareLinks(createdBy: string, limit: number): ShareLink[] {
   return [...links.values()].filter((l) => l.createdBy === createdBy).slice(0, limit);
 }
 
-export function revokeShareLink(token: string): boolean {
+/** Revokes a link; only its creator may. */
+export function revokeShareLink(token: string, caller: string): boolean {
+  const link = links.get(token);
+  if (!link || link.createdBy !== caller) return false;
   return links.delete(token);
 }
 

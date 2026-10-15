@@ -32,6 +32,6 @@ describe('share links', () => {
 
   it('revokes a link', () => {
     const link = createShareLink('s1', 'alice');
-    expect(revokeShareLink(link.token)).toBe(true);
+    expect(revokeShareLink(link.token, 'alice')).toBe(true);
   });
 });

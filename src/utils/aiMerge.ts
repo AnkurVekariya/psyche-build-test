@@ -33,7 +33,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 /**
  * Call OpenRouter API for AI assistance with model fallback
  */
-export async function callOpenRouter(prompt: string, maxTokens: number = 1000, timeoutMs: number = 12000): Promise<string | null> {
+export async function callOpenRouter(prompt: string, maxTokens: number = 1000, timeoutMs: number = 120000): Promise<string | null> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 

@@ -52,8 +52,13 @@ export function createShare(req: ShareRequest, res: ServerResponse): void {
     send(res, 400, { error: 'sessionId is required' });
     return;
   }
-  const link = createShareLink(sessionId, login, ttlMs);
-  send(res, 201, { token: link.token, url: `/s/${link.token}`, expiresAt: link.expiresAt });
+  try {
+    const link = createShareLink(sessionId, login, ttlMs);
+    send(res, 201, { token: link.token, url: `/s/${link.token}`, expiresAt: link.expiresAt });
+  } catch {
+    // Missing and not-yours read the same, so session ids can't be probed.
+    send(res, 404, { error: 'Unknown session' });
+  }
 }
 
 export function listShares(req: ShareRequest, res: ServerResponse): void {

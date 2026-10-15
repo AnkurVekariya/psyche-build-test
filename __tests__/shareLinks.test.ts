@@ -8,6 +8,7 @@ import {
 } from '../src/services/shareLinks.js';
 
 sessions.set('s1', { id: 's1', owner: 'alice', log: ['started', 'built', 'done'] });
+sessions.set('s2', { id: 's2', owner: 'bob', log: ['bob only'] });
 
 describe('share links', () => {
   it('creates a link that resolves', () => {
@@ -23,6 +24,13 @@ describe('share links', () => {
   it('lists only the caller\'s links', () => {
     createShareLink('s1', 'alice');
     expect(listShareLinks('alice', 10).length).toBeGreaterThan(0);
+  });
+
+  it('refuses to share or revoke someone else\'s session', () => {
+    expect(() => createShareLink('s2', 'alice')).toThrow('Unknown session');
+    const bobs = createShareLink('s2', 'bob');
+    expect(revokeShareLink(bobs.token, 'alice')).toBe(false);
+    expect(resolveShareLink(bobs.token).sessionId).toBe('s2');
   });
 
   it('revokes a link', () => {

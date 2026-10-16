@@ -1,0 +1,5 @@
+{
+  "name": "@psyche/storage",
+  "private": true,
+  "type": "module"
+}

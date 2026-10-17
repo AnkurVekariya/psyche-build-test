@@ -15,5 +15,5 @@ export function exportInvoicesCsv(invoices: Invoice[]): string {
 /** Updates the customer email on an invoice that has not been paid. */
 export function updateCustomerEmail(invoice: Invoice, email: string | null): Invoice {
   if (invoice.paid) throw new Error("paid invoices cannot be changed");
-  return { ...invoice, customerEmail: email.toLowerCase() };
+  return { ...invoice, customerEmail: email?.toLowerCase() ?? null };
 }

@@ -39,7 +39,7 @@ export async function createInvoice(
     id: crypto.randomUUID(),
     number: await nextInvoiceNumber(store, input.orgId),
     orgId: input.orgId,
-    customerEmail: input.customerEmail.toLowerCase(),
+    customerEmail: input.customerEmail?.toLowerCase() ?? null,
     items: input.items,
     discountPercent: input.discountPercent ?? 0,
     dueDate: input.dueDate,
@@ -51,5 +51,5 @@ export async function createInvoice(
 
 /** An unpaid invoice is overdue from the day after its due date. */
 export function isOverdue(invoice: Pick<Invoice, "dueDate" | "paid">, today: string): boolean {
-  return !invoice.paid && invoice.dueDate <= today;
+  return !invoice.paid && invoice.dueDate < today;
 }

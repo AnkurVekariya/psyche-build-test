@@ -8,7 +8,7 @@ export async function remindOverdue(
   let sent = 0;
   for (const inv of invoices) {
     if (!inv.overdue || !inv.customerEmail || sentToday.has(inv.id)) continue;
-    send(inv.customerEmail, inv.id);
+    await send(inv.customerEmail, inv.id);
     sentToday.add(inv.id);
     sent++;
   }

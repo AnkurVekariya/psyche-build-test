@@ -16,7 +16,7 @@ export function rateLimiter(max: number, windowMs: number): Handler {
     }
     entry.count++;
     if (entry.count > max) {
-      return { status: 429, headers: {}, body: { error: "rate limited", retryAfterSeconds: Math.ceil((entry.resetAt - now) / 1000) } };
+      return { status: 429, headers: { "retry-after": String(Math.ceil((entry.resetAt - now) / 1000)) }, body: { error: "rate limited", retryAfterSeconds: Math.ceil((entry.resetAt - now) / 1000) } };
     }
     return undefined;
   };

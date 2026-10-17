@@ -6,8 +6,12 @@ export async function sendConfirmations(
   let sent = 0;
   for (const b of bookings) {
     if (!b.requesterEmail) continue;
-    await send(b.requesterEmail, b.id);
-    sent++;
+    try {
+      await send(b.requesterEmail, b.id);
+      sent++;
+    } catch {
+      // One bad address does not stop the rest; the count shows what went out.
+    }
   }
   return sent;
 }

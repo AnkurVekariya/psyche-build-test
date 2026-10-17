@@ -41,9 +41,10 @@ export async function createBooking(
 }
 
 /** Full refund when cancelled 24 hours or more before the start, half otherwise, nothing once it has started. */
-export function refundCents(booking: Pick<Booking, "start" | "priceCents">, cancelledAt: Date): number {
+export function refundCents(booking: Pick<Booking, "start" | "priceCents">, cancelledAt: Date, latePercent = 50): number {
   const hoursBefore = (booking.start.getTime() - cancelledAt.getTime()) / 3_600_000;
-  return hoursBefore >= 24 ? booking.priceCents : Math.round(booking.priceCents / 2);
+  if (hoursBefore <= 0) return 0;
+  return hoursBefore >= 24 ? booking.priceCents : Math.round((booking.priceCents * latePercent) / 100);
 }
 
 export function updateRequester(booking: Booking, email: string | null): Booking {

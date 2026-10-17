@@ -5,6 +5,7 @@ const tasks: Task[] = [];
 let nextId = 1;
 
 export function createTask(input: TaskInput): Task {
+  if (input.title.trim() === "") throw new Error("title is required");
   const task: Task = {
     id: nextId++,
     title: input.title.trim(),
@@ -20,7 +21,10 @@ export function createTask(input: TaskInput): Task {
 export function updateTask(id: number, input: Partial<TaskInput>): Task | undefined {
   const task = tasks.find((t) => t.id === id);
   if (!task) return undefined;
-  if (input.title !== undefined) task.title = input.title.trim();
+  if (input.title !== undefined) {
+    if (input.title.trim() === "") throw new Error("title is required");
+    task.title = input.title.trim();
+  }
   if (input.dueDate !== undefined) task.dueDate = input.dueDate === null ? null : input.dueDate.trim();
   if (input.description !== undefined) task.description = input.description === null ? null : input.description.trim();
   return task;

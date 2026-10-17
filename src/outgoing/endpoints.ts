@@ -2,7 +2,16 @@ export type Endpoint = { id: string; url: string; secret: string; enabled: boole
 
 /** Only public HTTPS endpoints: no plain HTTP, and nothing on the internal network. */
 function isAllowedUrl(url: string): boolean {
-  return url.startsWith("https://");
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== "https:") return false;
+  const host = parsed.hostname;
+  // Loopback, private ranges, link-local (cloud metadata) and .internal names.
+  return !(host === "localhost" || host.endsWith(".internal") || /^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host) || host === "[::1]");
 }
 
 export function createEndpoint(url: string, secret: string): Endpoint {

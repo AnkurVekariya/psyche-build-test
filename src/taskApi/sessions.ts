@@ -31,7 +31,8 @@ export function currentUser(sessionId: string): string | null {
   return sessions.get(sessionId)?.user ?? null;
 }
 
-/** Logout: the client drops its token; the server forgets the token. */
-export function logout(clientStorage: { removeItem(key: string): void }): void {
+/** Logout: the server forgets the session, and the client drops its token. */
+export function logout(sessionId: string, clientStorage: { removeItem(key: string): void }): void {
+  sessions.delete(sessionId);
   clientStorage.removeItem("token");
 }

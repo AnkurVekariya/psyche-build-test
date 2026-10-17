@@ -21,13 +21,13 @@ export function updateTask(id: number, input: Partial<TaskInput>): Task | undefi
   const task = tasks.find((t) => t.id === id);
   if (!task) return undefined;
   if (input.title !== undefined) task.title = input.title.trim();
-  if (input.dueDate !== undefined) task.dueDate = input.dueDate.trim();
+  if (input.dueDate !== undefined) task.dueDate = input.dueDate === null ? null : input.dueDate.trim();
   if (input.description !== undefined) task.description = input.description === null ? null : input.description.trim();
   return task;
 }
 
 /** One page of tasks, pages numbered from 1. */
 export function listTasks(page: number, size: number): Task[] {
-  const start = page * size;
+  const start = (page - 1) * size;
   return tasks.slice(start, start + size);
 }

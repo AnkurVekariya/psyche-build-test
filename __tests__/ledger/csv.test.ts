@@ -18,6 +18,17 @@ describe("csv", () => {
     expect(restoreField(escapeField("=SUM(A1:A9)"))).toBe("=SUM(A1:A9)");
   });
 
+  it("keeps a leading apostrophe through a round trip", () => {
+    expect(restoreField(escapeField("'=x"))).toBe("'=x");
+  });
+
+  it("adds nothing when a later row is bad", () => {
+    const ledger = new Ledger();
+    const text = `${HEADER}\ne1,asha,100,INR,food,Lunch,2026-10-11\ne2,ravi,100,inr,food,Cab,2026-10-12`;
+    expect(() => importCsv(ledger, text)).toThrow("unknown currency");
+    expect(ledger.all()).toEqual([]);
+  });
+
   it("rejects a non-numeric amount", () => {
     const ledger = new Ledger();
     expect(() => importCsv(ledger, `${HEADER}\ne1,asha,12.50,INR,food,Lunch,2026-10-11`)).toThrow("whole minor units");

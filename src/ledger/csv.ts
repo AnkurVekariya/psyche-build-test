@@ -8,7 +8,9 @@ const FORMULA_TRIGGERS = ["=", "+", "-", "@"];
 /** A cell safe to open in a spreadsheet: formulas prefixed with ', then quoted if needed. */
 export function escapeField(value: string): string {
   let out = value;
-  if (FORMULA_TRIGGERS.includes(out.charAt(0))) out = `'${out}`;
+  // A value that already looks escaped gets a second apostrophe, so import restores it exactly.
+  const looksEscaped = out.startsWith("'") && FORMULA_TRIGGERS.includes(out.charAt(1));
+  if (FORMULA_TRIGGERS.includes(out.charAt(0)) || looksEscaped) out = `'${out}`;
   if (/[",\n]/.test(out)) out = `"${out.replace(/"/g, '""')}"`;
   return out;
 }
@@ -60,7 +62,7 @@ function parseMinorUnits(raw: string, row: number): number {
 export function importCsv(ledger: Ledger, text: string): number {
   const [header, ...lines] = text.trim().split("\n");
   if (header !== HEADER) throw new LedgerError("unexpected CSV header");
-  let added = 0;
+  const parsed: Expense[] = [];
   lines.forEach((line, i) => {
     const [id, payer, amount, currency, category, description, createdAt] = splitRow(line).map(restoreField);
     const expense: Expense = {
@@ -72,8 +74,11 @@ export function importCsv(ledger: Ledger, text: string): number {
       description,
       createdAt,
     };
-    ledger.add(expense);
-    added++;
+    parsed.push(expense);
   });
-  return added;
+  // Validate every row on a scratch ledger first, so a bad row adds nothing.
+  const scratch = new Ledger();
+  for (const e of parsed) scratch.add(e);
+  for (const e of parsed) ledger.add(e);
+  return parsed.length;
 }

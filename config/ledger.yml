@@ -1,0 +1,4 @@
+# Ledger service settings.
+export_dir: ./exports
+max_import_rows: 5000
+jwt_secret: ${LEDGER_JWT_SECRET:-q7Vn2Lk9Xw4Rt8Zp3Hs6Jd1Fb5Mc0Ny2Ue7Ga4Kp9}

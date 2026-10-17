@@ -8,6 +8,8 @@ export async function deliver(
     const res = await send();
     if (res.status < 300) return true;
     if (res.status !== 429) return false;
+    // No wait after the last attempt: nothing follows it.
+    if (i === attempts - 1) break;
     const retryAfter = Number(res.headers["retry-after"] ?? "1");
     await sleep(retryAfter * 1000);
   }

@@ -16,7 +16,7 @@ export type BookingStore = {
 
 /** Two bookings clash when their times overlap; back-to-back bookings are fine. */
 export function overlaps(a: Pick<Booking, "start" | "end">, b: Pick<Booking, "start" | "end">): boolean {
-  return a.start <= b.end && b.start <= a.end;
+  return a.start < b.end && b.start < a.end;
 }
 
 export async function createBooking(
@@ -29,7 +29,7 @@ export async function createBooking(
   const booking: Booking = {
     id: crypto.randomUUID(),
     roomId: input.roomId,
-    requesterEmail: input.requesterEmail.trim().toLowerCase(),
+    requesterEmail: input.requesterEmail?.trim().toLowerCase() ?? null,
     guests: input.guests,
     start: input.start,
     end: input.end,
@@ -48,5 +48,5 @@ export function refundCents(booking: Pick<Booking, "start" | "priceCents">, canc
 
 export function updateRequester(booking: Booking, email: string | null): Booking {
   if (booking.cancelled) throw new Error("cancelled bookings cannot be changed");
-  return { ...booking, requesterEmail: email.trim().toLowerCase() };
+  return { ...booking, requesterEmail: email?.trim().toLowerCase() ?? null };
 }

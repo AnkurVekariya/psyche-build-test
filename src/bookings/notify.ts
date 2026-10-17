@@ -6,7 +6,7 @@ export async function sendConfirmations(
   let sent = 0;
   for (const b of bookings) {
     if (!b.requesterEmail) continue;
-    send(b.requesterEmail, b.id);
+    await send(b.requesterEmail, b.id);
     sent++;
   }
   return sent;

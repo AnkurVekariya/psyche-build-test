@@ -25,5 +25,7 @@ export class ResponseCache<T> {
 }
 
 export function cacheFromEnv<T>(): ResponseCache<T> {
-  return new ResponseCache<T>(Number(process.env.API_CACHE_TTL_SECONDS ?? "30"));
+  const ttl = Number(process.env.API_CACHE_TTL_SECONDS ?? "30");
+  // A bad value ("30s", "") falls back to the default instead of NaN, which never expires.
+  return new ResponseCache<T>(Number.isFinite(ttl) && ttl > 0 ? ttl : 30);
 }

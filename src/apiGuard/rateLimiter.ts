@@ -2,7 +2,10 @@ export type Request = { path: string; headers: Record<string, string | undefined
 export type Response = { status: number; headers: Record<string, string>; body: unknown };
 export type Handler = (req: Request) => Response | undefined;
 
-/** A sliding-window limit: at most `max` requests per client in any `windowMs`. */
+/**
+ * A sliding-window limit: at most `max` requests per client in any `windowMs`.
+ * The window slides: it restarts from each client's first request after the last one expired.
+ */
 export function rateLimiter(max: number, windowMs: number): Handler {
   const hits = new Map<string, { count: number; resetAt: number }>();
   return (req) => {

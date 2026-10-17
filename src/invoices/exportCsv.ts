@@ -2,10 +2,16 @@ import { invoiceTotal, type Invoice } from "./invoices";
 
 const HEADER = "number,customer,total,due,paid";
 
+/** A cell a spreadsheet will not run as a formula: one starting with = + - @ tab or CR gets a leading apostrophe. */
+function safeCell(cell: string): string {
+  return /^[=+\-@\t\r]/.test(cell) ? `'${cell}` : cell;
+}
+
 /** Invoices as CSV for the finance team's spreadsheet. */
 export function exportInvoicesCsv(invoices: Invoice[]): string {
   const rows = invoices.map((inv) =>
     [inv.number, inv.customerEmail ?? "", (invoiceTotal(inv) / 100).toFixed(2), inv.dueDate, inv.paid ? "yes" : "no"]
+      .map(safeCell)
       .map((cell) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell))
       .join(",")
   );

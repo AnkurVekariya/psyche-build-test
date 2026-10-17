@@ -8,7 +8,7 @@ export function createTask(input: TaskInput): Task {
   const task: Task = {
     id: nextId++,
     title: input.title.trim(),
-    description: input.description === undefined ? null : input.description.trim(),
+    description: input.description == null ? null : input.description.trim(),
     dueDate: input.dueDate ?? null,
     done: false,
   };

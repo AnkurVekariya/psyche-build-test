@@ -21,8 +21,8 @@ export class Ledger {
   private readonly expenses: Expense[] = [];
 
   add(expense: Expense): void {
-    if (!Number.isFinite(expense.amount) || expense.amount <= 0) {
-      throw new LedgerError(`expense ${expense.id}: amount must be a positive number`);
+    if (!Number.isSafeInteger(expense.amount) || expense.amount <= 0) {
+      throw new LedgerError(`expense ${expense.id}: amount must be a positive whole number of minor units`);
     }
     if (!CURRENCY_PATTERN.test(expense.currency)) {
       throw new LedgerError(`expense ${expense.id}: unknown currency ${expense.currency}`);

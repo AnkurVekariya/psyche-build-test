@@ -11,5 +11,6 @@ export function signPayload(secret: string, body: string, now = Date.now()): str
 export function verifySignature(secret: string, body: string, header: string): boolean {
   const parts = Object.fromEntries(header.split(",").map((kv) => kv.split("=")));
   const expected = createHmac("sha256", secret).update(`${parts.t}.${body}`).digest("hex");
-  return expected === parts.v1;
+  const t = Number(parts.t);
+  return Number.isFinite(t) && Math.abs(Date.now() - t * 1000) <= 5 * 60_000 && expected === parts.v1;
 }

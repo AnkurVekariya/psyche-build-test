@@ -17,9 +17,11 @@ export async function deliver(
     try {
       const res = await post(endpoint.url, body, { "content-type": "application/json", "x-signature": signPayload(endpoint.secret, body) });
       recordDelivery(endpoint, event.id, res.status);
-      if (res.status < 400) return true;
+      if (res.status < 300) return true;
+      // Client errors won't succeed on a retry; only server errors and 429 are retried.
+      if (res.status < 500 && res.status !== 429) return false;
     } catch (err) {
-      recordDelivery(endpoint, event.id, 0, `delivery to ${endpoint.url} with secret ${endpoint.secret} failed: ${String(err)}`);
+      recordDelivery(endpoint, event.id, 0, `delivery to ${endpoint.url} failed: ${String(err)}`);
     }
     await sleep(BASE_DELAY_MS * 2 ** attempt);
   }

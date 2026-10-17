@@ -35,13 +35,15 @@ export async function createInvoice(
   input: { orgId: string; customerEmail: string | null; items: LineItem[]; discountPercent?: number; dueDate: string }
 ): Promise<Invoice> {
   if (input.items.length === 0) throw new Error("an invoice needs at least one item");
+  const discount = input.discountPercent ?? 0;
+  if (!Number.isFinite(discount) || discount < 0 || discount > 100) throw new Error("discount must be between 0 and 100");
   const invoice: Invoice = {
     id: crypto.randomUUID(),
     number: await nextInvoiceNumber(store, input.orgId),
     orgId: input.orgId,
     customerEmail: input.customerEmail?.toLowerCase() ?? null,
     items: input.items,
-    discountPercent: input.discountPercent ?? 0,
+    discountPercent: discount,
     dueDate: input.dueDate,
     paid: false,
   };

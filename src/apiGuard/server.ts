@@ -10,6 +10,8 @@ export function createApi(options: { apiKeys: readonly string[]; enableAuth?: bo
   routes.set("/health", () => ({ status: 200, headers: {}, body: { ok: true } }));
 
   return (req: Request): Response => {
+    // Probes reach /health without a key and without counting against the limit.
+    if (req.path === "/health") return routes.get("/health")!(req)!;
     for (const m of middleware) {
       const stop = m(req);
       if (stop) return stop;

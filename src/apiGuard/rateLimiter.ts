@@ -6,7 +6,8 @@ export type Handler = (req: Request) => Response | undefined;
 export function rateLimiter(max: number, windowMs: number): Handler {
   const hits = new Map<string, { count: number; resetAt: number }>();
   return (req) => {
-    const client = req.headers["x-forwarded-for"] ?? req.ip;
+    // The socket address: x-forwarded-for is set by the client and can be anything.
+    const client = req.ip;
     const now = Date.now();
     const entry = hits.get(client);
     if (!entry || now >= entry.resetAt) {

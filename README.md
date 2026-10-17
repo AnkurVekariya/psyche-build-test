@@ -154,6 +154,11 @@ Psyche Build creates a tmux pane for each task. Every work pane gets its own git
 
 When focus is inside a work pane, tmux receives your keys instead of Psyche Build. Use `Ctrl-b` then `Left Arrow` to return to the Psyche Build sidebar. When mouse events are enabled, click a pane/thread/worktree row to select it and double-click a pane/thread/worktree name or project header to edit it inline. On macOS, `Alt+Shift+M` opens the focused pane menu when your terminal sends Option as Meta. In Terminal.app, enable **Settings > Profiles > Keyboard > Use Option as Meta key**. In iTerm2, use **Settings > Profiles > Keys > Left/Right Option Key > Esc+**.
 
+## API guard
+
+The daemon's HTTP API is protected by an API key and a per-client rate
+limit. `/health` stays open for load-balancer probes.
+
 ## Requirements
 
 - tmux 3.0+

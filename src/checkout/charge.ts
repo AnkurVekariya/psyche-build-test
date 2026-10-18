@@ -8,12 +8,16 @@ export type PaymentGateway = {
   charge(input: { amountCents: number; card: Card; idempotencyKey: string }): Promise<ChargeResult>;
 };
 
+/** A refund is reserved (counted against the amount paid) before it is paid out. */
+export type Refund = { id: string; amountCents: number; paidOut: boolean };
+
 export type Order = {
   id: string;
   customerId: string;
   totalCents: number;
   amountPaidCents: number;
   refundedCents: number;
+  refunds: Refund[];
   chargeId: string | null;
   status: "pending" | "paid" | "failed" | "partially_refunded" | "refunded";
 };
@@ -21,6 +25,11 @@ export type Order = {
 export type OrderStore = {
   save(order: Order): Promise<void>;
   find(id: string): Promise<Order | null>;
+  /**
+   * Atomically replace the order with `change(order)` (a transaction or compare-and-set).
+   * `change` returns null to leave the order as it is; then `update` returns null too.
+   */
+  update(id: string, change: (order: Order) => Order | null): Promise<Order | null>;
 };
 
 /**
@@ -47,6 +56,9 @@ export async function checkout(
   if (existing && existing.customerId !== input.customerId) {
     throw new Error(`checkout ${input.checkoutId} belongs to another customer`);
   }
+  if (existing && existing.totalCents !== q.totalCents) {
+    throw new Error(`checkout ${input.checkoutId} was started for a different amount; start a new checkout`);
+  }
   if (existing && existing.status !== "pending") {
     if (existing.status === "failed") throw new Error(`checkout ${input.checkoutId} failed; start a new checkout`);
     return existing;
@@ -59,12 +71,10 @@ export async function checkout(
     totalCents: q.totalCents,
     amountPaidCents: 0,
     refundedCents: 0,
+    refunds: [],
     chargeId: null,
     status: "pending",
   };
-  if (pending.totalCents !== q.totalCents) {
-    throw new Error(`checkout ${input.checkoutId} was started for a different amount; start a new checkout`);
-  }
   if (!existing) await orders.save(pending);
 
   console.info("checkout: charging", { customerId: input.customerId, orderId: pending.id, total: q.totalCents });

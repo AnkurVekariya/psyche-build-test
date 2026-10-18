@@ -50,6 +50,8 @@ export function quote(items: CartItem[], region: string, coupon: Coupon | null, 
   if (rate === undefined) throw new Error(`no VAT rate for region ${region}`);
 
   const subtotalCents = subtotal(items);
+  // Tax multiplies by up to 100 before dividing; keep that exact.
+  if (subtotalCents * 100 > Number.MAX_SAFE_INTEGER) throw new Error("the cart total is too large");
   const percentOff = coupon && couponIsValid(coupon, today) ? coupon.percentOff : 0;
   const discountCents = Math.round((subtotalCents * percentOff) / 100);
   const taxCents = Math.round(((subtotalCents - discountCents) * rate) / 100);

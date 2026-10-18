@@ -22,7 +22,7 @@ export function subtotal(items: CartItem[]): number {
 
 /** A coupon is valid until the end of its expiry day. */
 export function couponIsValid(coupon: Coupon, today: string): boolean {
-  return coupon.expiresAt > today;
+  return coupon.expiresAt >= today;
 }
 
 export function quote(items: CartItem[], region: string, coupon: Coupon | null, today: string): Quote {

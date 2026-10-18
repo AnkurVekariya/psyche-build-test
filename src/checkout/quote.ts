@@ -25,12 +25,33 @@ export function couponIsValid(coupon: Coupon, today: string): boolean {
   return coupon.expiresAt >= today;
 }
 
-export function quote(items: CartItem[], region: string, coupon: Coupon | null, today: string): Quote {
+function checkItems(items: CartItem[]): void {
   if (items.length === 0) throw new Error("the cart is empty");
+  for (const item of items) {
+    if (!Number.isInteger(item.unitPriceCents) || item.unitPriceCents < 0) {
+      throw new Error(`${item.sku}: price must be whole, non-negative cents`);
+    }
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+      throw new Error(`${item.sku}: quantity must be a positive whole number`);
+    }
+  }
+}
+
+function checkCoupon(coupon: Coupon): void {
+  if (!Number.isInteger(coupon.percentOff) || coupon.percentOff < 0 || coupon.percentOff > 100) {
+    throw new Error(`${coupon.code}: percentOff must be a whole number from 0 to 100`);
+  }
+}
+
+export function quote(items: CartItem[], region: string, coupon: Coupon | null, today: string): Quote {
+  checkItems(items);
+  if (coupon) checkCoupon(coupon);
+  const rate = TAX_RATES[region];
+  if (rate === undefined) throw new Error(`no VAT rate for region ${region}`);
+
   const subtotalCents = subtotal(items);
   const percentOff = coupon && couponIsValid(coupon, today) ? coupon.percentOff : 0;
   const discountCents = Math.round((subtotalCents * percentOff) / 100);
-  const rate = TAX_RATES[region] ?? 0;
-  const taxCents = Math.floor(((subtotalCents - discountCents) * rate) / 100);
+  const taxCents = Math.round(((subtotalCents - discountCents) * rate) / 100);
   return { subtotalCents, discountCents, taxCents, totalCents: subtotalCents - discountCents + taxCents };
 }

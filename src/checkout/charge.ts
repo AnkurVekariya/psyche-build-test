@@ -8,8 +8,11 @@ export type PaymentGateway = {
   charge(input: { amountCents: number; card: Card; idempotencyKey: string }): Promise<ChargeResult>;
 };
 
-/** A refund is reserved (counted against the amount paid) before it is paid out. */
-export type Refund = { id: string; amountCents: number; paidOut: boolean };
+/**
+ * A refund is reserved (counted against the amount paid) before it is paid out; once paid out
+ * it holds the gateway's refund id.
+ */
+export type Refund = { id: string; amountCents: number; gatewayRefundId: string | null };
 
 export type Order = {
   id: string;

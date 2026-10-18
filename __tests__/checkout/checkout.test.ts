@@ -155,8 +155,8 @@ describe("refunds", () => {
     ]);
     expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected", "fulfilled"]);
     expect(gateway.calls).toEqual([
-      { amountCents: 6000, idempotencyKey: "refund-co_1-a" },
-      { amountCents: 700, idempotencyKey: "refund-co_1-c" },
+      { amountCents: 6000, idempotencyKey: "refund:co_1:a" },
+      { amountCents: 700, idempotencyKey: "refund:co_1:c" },
     ]);
     expect(orders.all.get("co_1")?.refundedCents).toBe(6700);
   });
@@ -169,21 +169,26 @@ describe("refunds", () => {
     expect(orders.all.get("co_1")).toMatchObject({ refundedCents: 500, status: "paid" });
 
     const gateway = refundGateway();
-    await refundOrder(gateway, orders, "co_1", "r1", 500);
-    await refundOrder(gateway, orders, "co_1", "r1", 500);
+    const first = await refundOrder(gateway, orders, "co_1", "r1", 500);
+    const again = await refundOrder(gateway, orders, "co_1", "r1", 500);
+    expect(again).toBe(first);
     expect(orders.all.get("co_1")).toMatchObject({ refundedCents: 500, status: "partially_refunded" });
-    expect(gateway.calls.map((c) => c.idempotencyKey)).toEqual(["refund-co_1-r1", "refund-co_1-r1"]);
+    expect(gateway.calls.map((c) => c.idempotencyKey)).toEqual(["refund:co_1:r1"]);
     await expect(refundOrder(gateway, orders, "co_1", "r1", 700)).rejects.toThrow(/started for 500 cents/);
   });
 
-  it("scopes refund keys to the order", async () => {
+  it("gives every order and refund id pair its own key", async () => {
     const orders = memoryOrders();
-    await checkout(gatewayReturning(), orders, { ...order, checkoutId: "co_1", coupon: null });
-    await checkout(gatewayReturning(), orders, { ...order, checkoutId: "co_2", coupon: null });
+    for (const checkoutId of ["co_1", "co_2", "a:b", "a"]) {
+      await checkout(gatewayReturning(), orders, { ...order, checkoutId, coupon: null });
+    }
     const gateway = refundGateway();
     await refundOrder(gateway, orders, "co_1", "r1", 500);
     await refundOrder(gateway, orders, "co_2", "r1", 500);
-    expect(gateway.calls.map((c) => c.idempotencyKey)).toEqual(["refund-co_1-r1", "refund-co_2-r1"]);
+    await refundOrder(gateway, orders, "a:b", "c", 500);
+    await refundOrder(gateway, orders, "a", "b:c", 500);
+    const keys = gateway.calls.map((c) => c.idempotencyKey);
+    expect(new Set(keys).size).toBe(4);
   });
 
   it("says why a refund is refused", async () => {

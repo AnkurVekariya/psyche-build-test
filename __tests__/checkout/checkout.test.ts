@@ -199,6 +199,10 @@ describe("refunds", () => {
     }
     await expect(refundOrder(gateway, orders, "co_1", " ", 100)).rejects.toThrow(/refundId is required/);
     await expect(refundOrder(gateway, orders, "nope", "r1", 100)).rejects.toThrow(/no order nope/);
+    await paidOrder(orders);
+    await expect(refundOrder(gateway, orders, "co_1", "\ud800", 100)).rejects.toThrow(URIError);
+    expect(orders.all.get("co_1")?.refundedCents).toBe(0);
+    orders.all.clear();
 
     const declined = gatewayReturning("declined");
     await expect(checkout(declined, orders, { ...order, coupon: null })).rejects.toThrow(/declined/);
@@ -208,5 +212,27 @@ describe("refunds", () => {
     await expect(checkout(crashing, orders, { ...order, checkoutId: "co_2", coupon: null })).rejects.toThrow(/timeout/);
     await expect(refundOrder(gateway, orders, "co_2", "r1", 100)).rejects.toThrow(/is pending; nothing to refund/);
     expect(gateway.calls).toEqual([]);
+  });
+
+});
+
+describe("concurrent checkout retries", () => {
+  it("do not overwrite a refund made in between", async () => {
+    const orders = memoryOrders();
+    const crashing: PaymentGateway = { charge: async () => Promise.reject(new Error("timeout")) };
+    await expect(checkout(crashing, orders, { ...order, coupon: null })).rejects.toThrow(/timeout/);
+
+    let release = () => {};
+    const slow: PaymentGateway = {
+      charge: () => new Promise((resolve) => (release = () => resolve({ id: "ch_1", status: "succeeded" }))),
+    };
+    const late = checkout(slow, orders, { ...order, coupon: null });
+    await checkout(gatewayReturning(), orders, { ...order, coupon: null });
+    await refundOrder(refundGateway(), orders, "co_1", "r1", 500);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    release();
+
+    expect(await late).toMatchObject({ status: "partially_refunded", refundedCents: 500 });
+    expect(orders.all.get("co_1")).toMatchObject({ status: "partially_refunded", refundedCents: 500 });
   });
 });

@@ -87,12 +87,18 @@ export async function checkout(
     idempotencyKey: `checkout-${input.checkoutId}`,
   });
 
+  // Only a still-pending order is settled: a concurrent retry may already have settled it,
+  // and refunds may have followed.
+  const settle = (change: Partial<Order>) =>
+    orders.update(pending.id, (current) => (current.status === "pending" ? { ...current, ...change } : null));
+
   if (result.status !== "succeeded") {
-    await orders.save({ ...pending, chargeId: result.id, status: "failed" });
+    await settle({ chargeId: result.id, status: "failed" });
     throw new Error(`payment ${result.status} for checkout ${input.checkoutId}`);
   }
 
-  const order: Order = { ...pending, amountPaidCents: q.totalCents, chargeId: result.id, status: "paid" };
-  await orders.save(order);
+  const order = (await settle({ amountPaidCents: q.totalCents, chargeId: result.id, status: "paid" })) ??
+    (await orders.find(pending.id));
+  if (!order) throw new Error(`order ${pending.id} disappeared`);
   return order;
 }

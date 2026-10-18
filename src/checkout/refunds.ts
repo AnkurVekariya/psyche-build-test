@@ -50,6 +50,8 @@ export async function refundOrder(
     throw new Error("refund amount must be a positive whole number of cents");
   }
   if (refundId.trim() === "") throw new Error("refundId is required");
+  // Built before anything is reserved: a malformed id fails here, not with cents held.
+  const idempotencyKey = refundKey(orderId, refundId);
 
   let refused = `no order ${orderId}`;
   const reserved = await orders.update(orderId, (order) => {
@@ -67,7 +69,7 @@ export async function refundOrder(
   const refund = await gateway.refund({
     chargeId: reserved.chargeId,
     amountCents,
-    idempotencyKey: refundKey(orderId, refundId),
+    idempotencyKey,
   });
   await orders.update(orderId, (order) => markPaidOut(order, refundId, refund.id));
   return refund.id;
